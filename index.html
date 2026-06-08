@@ -498,9 +498,58 @@
     .agr-footer strong { color: var(--lime-dark); }
     
     .agr-disclaimer { background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: 0.78rem; color: #92400e; line-height: 1.6; margin-top: 20px; }
+    
+    /* ─── MOBILE RESPONSIVENESS ─── */
+    .mobile-menu-btn {
+      display: none;
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--lime);
+      color: #111827;
+      border: none;
+      border-radius: 50%;
+      width: 56px;
+      height: 56px;
+      font-size: 1.5rem;
+      box-shadow: var(--shadow-lg);
+      z-index: 2000;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        box-shadow: var(--shadow-lg);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+        padding: 20px 16px;
+      }
+      .mobile-menu-btn {
+        display: flex;
+      }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .agr-header { flex-direction: column; }
+      .agr-parties-grid { grid-template-columns: 1fr; }
+      .agr-sig-grid { grid-template-columns: 1fr; gap: 20px; }
+      .agr-screen-only { flex-direction: column; align-items: flex-start; }
+      .btn-group { flex-wrap: wrap; }
+      #receipt-paper { padding: 24px; }
+    }
   </style>
 </head>
 <body>
+
+  <!-- MOBILE MENU BUTTON -->
+  <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
 
   <!-- ── SIDEBAR ── -->
   <aside class="sidebar">
@@ -819,7 +868,7 @@
       <div class="agr-paper">
         <div class="agr-header">
           <div class="doc-header-left">
-            <div class="agr-brand-name" id="agr-bizName">SimplyLawn</div>
+            <div class="agr-brand-name" id="agr-bizName" contenteditable="true" title="Click to edit Business Name" onblur="updateAgrBizName(this.textContent)">SimplyLawn</div>
             <div class="agr-brand-tagline" id="agr-bizTagline">Lawn Maintenance &amp; Care</div>
             <div class="agr-brand-contact">
               <span id="agr-phone">Your Phone Number</span><br/>
@@ -1207,6 +1256,8 @@
       
       document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
       if(linkEl) linkEl.classList.add('active');
+
+      document.querySelector('.sidebar').classList.remove('open'); // close on mobile
 
       if(viewId === 'invoices') populateInvoiceCustomerDropdown();
     }
@@ -1874,7 +1925,7 @@
       }
       
       // Update Agreement details
-      const bizName = s.bizName || 'Business Name';
+      const bizName = s.bizName || 'SimplyLawn';
       document.getElementById('agr-bizName').textContent = bizName;
       document.getElementById('agr-bizName2').textContent = bizName;
       document.getElementById('agr-bizName3').textContent = bizName;
@@ -1890,6 +1941,14 @@
       
       document.getElementById('agr-provPhone').value = s.bizPhone || '';
       document.getElementById('agr-provEmail').value = s.bizEmail || '';
+    }
+
+    function updateAgrBizName(newName) {
+      const name = newName.trim() || 'SimplyLawn';
+      crm.settings.bizName = name;
+      saveState();
+      loadSettingsToUI();
+      document.getElementById('biz-name').value = name;
     }
 
     // Logo Upload handler
