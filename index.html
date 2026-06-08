@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nexus CRM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* Base Theme Colors - Dark Mode Glassmorphism */
+      --bg-gradient: linear-gradient(135deg, #0b1121 0%, #151f32 40%, #0d1424 100%);
+      --glass-bg: rgba(30, 41, 59, 0.6);
+      --glass-bg-hover: rgba(45, 55, 72, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --glass-border-focus: rgba(132, 204, 22, 0.5);
+      
+      --lime: #84cc16;
+      --lime-dark: #65a30d;
+      --lime-light: #d9f99d;
+      --lime-pale: rgba(132, 204, 22, 0.1);
+      --forest: #166534;
+      --forest-mid: #15803d;
+      --green-mid: #22c55e;
+      --accent: #3b82f6; /* Blue for CRM actions */
+      --accent-dark: #2563eb;
+      --accent-pale: rgba(59, 130, 246, 0.1);
+      --danger: #ef4444;
+      --danger-dark: #dc2626;
+      --danger-pale: rgba(239, 68, 68, 0.1);
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dark: #1e293b; /* Used for print/light elements */
+      
+      --shadow: 0 4px 24px rgba(0,0,0,0.3);
+      --shadow-lg: 0 8px 40px rgba(0,0,0,0.4);
+      --radius: 16px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+    }
+
+    /* ─── APP LAYOUT ─── */
+    .sidebar {
+      width: 260px;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid var(--glass-border);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 16px;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 40px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand span { color: var(--lime); }
+
+    .nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .nav-link {
+      padding: 12px 16px;
+      border-radius: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .nav-link:hover {
+      background: var(--glass-bg);
+      color: var(--text-main);
+    }
+    .nav-link.active {
+      background: var(--lime-pale);
+      color: var(--lime);
+      border: 1px solid var(--glass-border-focus);
+    }
+
+    .main-content {
+      flex: 1;
+      margin-left: 260px;
+      padding: 32px 48px;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .view {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    .view.active { display: block; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── TYPOGRAPHY & HEADER ─── */
+    .view-header {
+      margin-bottom: 32px;
+    }
+    .view-title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+    .view-subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* ─── GLASS COMPONENTS ─── */
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+
+    /* Grid Layouts */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; }
+
+    /* Dashboard Stats */
+    .stat-card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .stat-label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .stat-value { font-size: 2.5rem; font-weight: 800; color: var(--text-main); }
+    .stat-value.lime { color: var(--lime); }
+    .stat-value.accent { color: var(--accent); }
+
+    /* ─── TABLES ─── */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    th {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    td {
+      padding: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.95rem;
+      vertical-align: middle;
+    }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+    
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-pending { background: #fef9c3; color: #854d0e; }
+    .badge-progress { background: var(--accent-pale); color: #60a5fa; border: 1px solid var(--accent); }
+    .badge-completed { background: var(--lime-pale); color: var(--lime); border: 1px solid var(--lime-dark); }
+    .badge-paid { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid var(--green-mid); }
+
+    /* ─── FORMS & INPUTS ─── */
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .field input, .field textarea, .field select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(15, 23, 42, 0.5);
+      transition: all 0.2s;
+      outline: none;
+    }
+    .field input:focus, .field textarea:focus, .field select:focus {
+      border-color: var(--lime);
+      box-shadow: 0 0 0 3px rgba(132,204,22,0.15);
+      background: rgba(15, 23, 42, 0.8);
+    }
+    /* Fix select dropdown color in dark mode */
+    .field select option { background: #0f172a; color: #f8fafc; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* ─── BUTTONS ─── */
+    .btn-group { display: flex; gap: 12px; margin-top: 16px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--lime);
+      color: #0f172a;
+      box-shadow: 0 4px 14px rgba(132,204,22,0.2);
+    }
+    .btn-primary:hover { background: var(--lime-light); transform: translateY(-1px); }
+    
+    .btn-accent {
+      background: var(--accent);
+      color: white;
+    }
+    .btn-accent:hover { background: var(--accent-dark); transform: translateY(-1px); }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      border: 1px solid var(--glass-border);
+    }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); }
+    
+    .btn-danger {
+      background: var(--danger-pale);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .btn-danger:hover { background: rgba(239, 68, 68, 0.2); }
+
+    .btn-icon {
+      padding: 8px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .btn-icon:hover { background: rgba(255, 255, 255, 0.1); color: var(--text-main); }
+    
+    .header-actions { display: flex; justify-content: space-between; align-items: center; }
+
+    /* ─── MODALS ─── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .modal-backdrop.active { display: flex; opacity: 1; }
+    
+    .modal {
+      background: var(--bg-gradient);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 500px;
+      padding: 32px;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(20px);
+      transition: transform 0.2s ease;
+    }
+    .modal-backdrop.active .modal { transform: translateY(0); }
+    .modal-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 24px; }
+
+    /* ─── TOAST ─── */
+    #toast {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background: rgba(34, 197, 94, 0.9);
+      backdrop-filter: blur(8px);
+      color: white;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      z-index: 9999;
+      pointer-events: none;
+      box-shadow: var(--shadow);
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.error { background: rgba(239, 68, 68, 0.9); }
+
+    /* ─── INVOICE GENERATOR SPECIFIC STYLES ─── */
+    .inv-card h2 {
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--lime); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .inv-card h2::before {
+      content: ''; display: inline-block; width: 4px; height: 16px;
+      background: var(--lime); border-radius: 2px;
+    }
+
+    .logo-upload-area {
+      border: 2px dashed var(--glass-border); border-radius: 12px;
+      padding: 16px; text-align: center; cursor: pointer; transition: all 0.2s;
+      background: rgba(0,0,0,0.2); position: relative;
+    }
+    .logo-upload-area:hover { border-color: var(--lime); background: rgba(132, 204, 22, 0.05); }
+    .logo-upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .logo-upload-area img#logo-preview { max-height: 70px; max-width: 100%; object-fit: contain; display: none; }
+    .logo-upload-text { font-size: 0.85rem; color: var(--text-muted); }
+
+    #items-table th { color: var(--text-muted); padding: 8px; }
+    .item-row td { padding: 8px; }
+    .item-row input {
+      padding: 10px; border: 1px solid var(--glass-border); border-radius: 8px;
+      background: rgba(15, 23, 42, 0.5); color: var(--text-main); width: 100%;
+    }
+    .subtotal-col { text-align: right; font-weight: 600; color: var(--lime); }
+    
+    .quick-services { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .quick-btn {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+      color: var(--text-main); padding: 6px 14px; border-radius: 99px; font-size: 0.8rem; cursor: pointer;
+    }
+    .quick-btn:hover { background: var(--lime-pale); border-color: var(--lime); color: var(--lime); }
+
+    .totals-section { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; margin-top: 16px; }
+    .totals-row { display: flex; justify-content: space-between; padding: 6px 0; }
+    .total-line { font-size: 1.2rem; color: var(--lime); font-weight: 700; border-top: 1px solid var(--glass-border); margin-top: 8px; padding-top: 12px;}
+
+    .status-toggle { display: flex; gap: 8px; }
+    .status-opt {
+      flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--glass-border);
+      text-align: center; cursor: pointer; background: rgba(0,0,0,0.2); color: var(--text-muted); font-weight: 600;
+    }
+    .status-opt.active-unpaid { border-color: #f59e0b; background: rgba(245, 158, 11, 0.1); color: #fcd34d; }
+    .status-opt.active-paid { border-color: var(--green-mid); background: rgba(34, 197, 94, 0.1); color: #86efac; }
+
+    /* Print Preview Modal */
+    #print-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+      z-index: 2000; display: none; align-items: flex-start; justify-content: center;
+      overflow-y: auto; padding: 40px 20px;
+    }
+    #print-overlay.active { display: flex; }
+    #receipt-paper {
+      background: white; color: #111827; width: 100%; max-width: 720px;
+      border-radius: 16px; padding: 48px; position: relative;
+    }
+    .receipt-close { position: absolute; top: 16px; right: 16px; background: #f3f4f6; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; }
+    
+    /* Print Specifics embedded in JS generation below to save space, retaining original styling for the paper */
+
+    @media print {
+      body * { visibility: hidden; }
+      #print-overlay, #print-overlay * { visibility: visible; }
+      #print-overlay { position: absolute; left: 0; top: 0; padding: 0; background: white; }
+      #receipt-paper { box-shadow: none; padding: 0; max-width: 100%; border-radius: 0; }
+      .preview-actions, .receipt-close { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span>✦</span> Nexus CRM
+    </div>
+    <nav class="nav-links">
+      <a class="nav-link active" onclick="switchView('dashboard', this)">📊 Dashboard</a>
+      <a class="nav-link" onclick="switchView('customers', this)">👥 Customers</a>
+      <a class="nav-link" onclick="switchView('jobs', this)">📅 Jobs</a>
+      <a class="nav-link" onclick="switchView('invoices', this)">🧾 Invoices</a>
+      <a class="nav-link" onclick="switchView('expenses', this)">💸 Expenses</a>
+      <a class="nav-link" onclick="switchView('settings', this)">⚙️ Settings</a>
+    </nav>
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="main-content">
+    
+    <!-- DASHBOARD VIEW -->
+    <section id="view-dashboard" class="view active">
+      <div class="view-header">
+        <h1 class="view-title">Overview</h1>
+        <p class="view-subtitle">Welcome back! Here is a summary of your business.</p>
+      </div>
+      
+      <div class="grid-3">
+        <div class="glass-card stat-card">
+          <span class="stat-label">Total Revenue</span>
+          <span class="stat-value lime" id="dash-revenue">$0.00</span>
+        </div>
+        <div class="glass-card stat-card">
+          <span class="stat-label">Total Expenses</span>
+          <span class="stat-value" style="color:var(--danger)" id="dash-expenses">$0.00</span>
+        </div>
+        <div class="glass-card stat-card">
+          <span class="stat-label">Net Profit</span>
+          <span class="stat-value accent" id="dash-profit">$0.00</span>
+        </div>
+      </div>
+      <div class="grid-3" style="margin-top:-8px; margin-bottom:24px;">
+        <div class="glass-card stat-card">
+          <span class="stat-label">Total Customers</span>
+          <span class="stat-value" style="color:var(--text-main); font-size:1.8rem;" id="dash-cust-count">0</span>
+        </div>
+        <div class="glass-card stat-card">
+          <span class="stat-label">Active Jobs</span>
+          <span class="stat-value" style="color:var(--text-main); font-size:1.8rem;" id="dash-job-count">0</span>
+        </div>
+        <div class="glass-card stat-card">
+          <span class="stat-label">Invoices</span>
+          <span class="stat-value" style="color:var(--text-main); font-size:1.8rem;" id="dash-inv-count">0</span>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="glass-card">
+          <div class="header-actions" style="margin-bottom:16px;">
+            <h3 style="font-size:1.1rem;">Recent Jobs</h3>
+            <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;" onclick="document.querySelector('.nav-links a:nth-child(3)').click()">View All</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Customer</th><th>Date</th><th>Status</th></tr></thead>
+              <tbody id="dash-recent-jobs"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="header-actions" style="margin-bottom:16px;">
+            <h3 style="font-size:1.1rem;">Recent Invoices</h3>
+            <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;" onclick="document.querySelector('.nav-links a:nth-child(4)').click()">View All</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Invoice #</th><th>Client</th><th>Total</th></tr></thead>
+              <tbody id="dash-recent-invoices"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CUSTOMERS VIEW -->
+    <section id="view-customers" class="view">
+      <div class="header-actions view-header">
+        <div>
+          <h1 class="view-title">Customers</h1>
+          <p class="view-subtitle">Manage your client directory.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openCustomerModal()">+ Add Customer</button>
+      </div>
+
+      <div class="glass-card table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Address</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="customers-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- JOBS VIEW -->
+    <section id="view-jobs" class="view">
+      <div class="header-actions view-header">
+        <div>
+          <h1 class="view-title">Jobs & Scheduling</h1>
+          <p class="view-subtitle">Track your upcoming and active jobs.</p>
+        </div>
+        <div class="btn-group" style="margin-top:0;">
+          <button class="btn btn-secondary" onclick="openJobSummaryModal()">📝 WhatsApp Summary</button>
+          <button class="btn btn-primary" onclick="openJobModal()">+ Add Job</button>
+        </div>
+      </div>
+
+      <div class="glass-card table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Description</th>
+              <th>Est. Price</th>
+              <th>Status</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="jobs-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- INVOICES VIEW (INTEGRATED SCRIPT) -->
+    <section id="view-invoices" class="view">
+      <div class="view-header">
+        <h1 class="view-title">Receipt Generator</h1>
+        <p class="view-subtitle">Create and manage professional invoices.</p>
+      </div>
+
+      <div class="grid-2">
+        <!-- Your Business -->
+        <div class="glass-card inv-card">
+          <h2>Your Business</h2>
+          <div class="field"><label>Business Name</label><input type="text" id="biz-name" onchange="saveSettings()"></div>
+          <div class="field"><label>Tagline / Trade</label><input type="text" id="biz-tagline" onchange="saveSettings()"></div>
+          <div class="form-row">
+            <div class="field"><label>Phone</label><input type="text" id="biz-phone" onchange="saveSettings()"></div>
+            <div class="field"><label>Email</label><input type="text" id="biz-email" onchange="saveSettings()"></div>
+          </div>
+          <div class="field"><label>Address / Area</label><input type="text" id="biz-address" onchange="saveSettings()"></div>
+          <div class="field">
+            <label>Logo (optional)</label>
+            <div class="logo-upload-area" id="logo-drop">
+              <input type="file" id="logo-file" accept="image/*" />
+              <img id="logo-preview" />
+              <div class="logo-upload-text" id="logo-text"><strong>📷 Upload Logo</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Client & Job -->
+        <div class="glass-card inv-card">
+          <h2>Client & Job</h2>
+          
+          <div class="field">
+            <label>Select Customer</label>
+            <select id="inv-client-select" onchange="autoFillInvoiceClient()">
+              <option value="">-- Custom / Walk-in --</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Client Name</label>
+            <input type="text" id="client-name" placeholder="e.g. John Smith" />
+          </div>
+          <div class="field">
+            <label>Property / Address</label>
+            <input type="text" id="client-address" placeholder="e.g. 42 Oak Street" />
+          </div>
+          <div class="field">
+            <label>Client Phone (optional)</label>
+            <input type="text" id="client-phone" placeholder="0400 000 000" />
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Invoice / Receipt #</label>
+              <div style="display:flex;gap:8px;">
+                <input type="text" id="inv-number" value="001" style="flex:1" />
+                <button class="btn btn-secondary" onclick="autoInvNumber()" style="padding:0 12px; font-size:0.8rem;">Auto</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>Date</label>
+              <input type="date" id="inv-date" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Payment Status</label>
+            <div class="status-toggle">
+              <button class="status-opt active-unpaid" id="status-unpaid" onclick="setInvStatus('unpaid')">⏳ Unpaid</button>
+              <button class="status-opt" id="status-paid" onclick="setInvStatus('paid')">✅ Paid</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Saved Invoices list to load from -->
+        <div class="glass-card inv-card">
+          <h2>Saved Receipts</h2>
+          <div id="saved-invoices-list" style="max-height:350px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
+          <div style="margin-top:16px;">
+             <button class="btn btn-secondary" style="width:100%;" onclick="clearInvoiceForm()">🆕 Start New Receipt</button>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="glass-card inv-card" style="grid-column: 1 / -1;">
+          <h2>Services / Items</h2>
+          <div class="quick-services">
+            <button class="quick-btn" onclick="addInvItem('Lawn Mowing', 1, 0)">🌿 Lawn Mowing</button>
+            <button class="quick-btn" onclick="addInvItem('Lawn Edging', 1, 0)">✂️ Edging</button>
+            <button class="quick-btn" onclick="addInvItem('Raking & Cleanup', 1, 0)">🍂 Raking & Cleanup</button>
+            <button class="quick-btn" onclick="addInvItem('Hedge Trimming', 1, 0)">🌳 Hedge Trim</button>
+            <button class="quick-btn" onclick="addInvItem('Garden Bed Weeding', 1, 0)">🌱 Weeding</button>
+          </div>
+
+          <table id="items-table">
+            <thead>
+              <tr><th style="width:50%">Description</th><th>Qty</th><th>Price ($)</th><th style="text-align:right">Subtotal</th><th></th></tr>
+            </thead>
+            <tbody id="items-body"></tbody>
+          </table>
+          <button class="btn btn-secondary" onclick="addInvItem('',1,0)" style="margin-top:12px;">＋ Add Item</button>
+
+          <div class="totals-section">
+            <div style="display:flex; gap:16px; margin-bottom:16px; align-items:center;">
+              <label style="font-size:0.8rem;color:var(--text-muted)">Discount:</label>
+              <input type="number" id="discount-val" placeholder="0" oninput="calcInvTotals()" style="width:80px; padding:6px; border-radius:6px; background:rgba(0,0,0,0.3); color:white; border:1px solid var(--glass-border);">
+              <select id="discount-type" onchange="calcInvTotals()" style="padding:6px; border-radius:6px; background:rgba(0,0,0,0.3); color:white; border:1px solid var(--glass-border);">
+                <option value="flat">$ Off</option><option value="pct">% Off</option>
+              </select>
+              <label style="font-size:0.8rem;color:var(--text-muted); margin-left:16px;">Tax %:</label>
+              <input type="number" id="tax-rate" placeholder="0" oninput="calcInvTotals()" style="width:70px; padding:6px; border-radius:6px; background:rgba(0,0,0,0.3); color:white; border:1px solid var(--glass-border);">
+            </div>
+            
+            <div class="totals-row"><span style="color:var(--text-muted)">Subtotal</span><strong id="t-subtotal">$0.00</strong></div>
+            <div class="totals-row" id="row-discount" style="display:none;"><span style="color:#fca5a5">Discount</span><strong id="t-discount" style="color:#fca5a5">-$0.00</strong></div>
+            <div class="totals-row" id="row-tax" style="display:none;"><span style="color:var(--text-muted)">Tax</span><strong id="t-tax">+$0.00</strong></div>
+            <div class="totals-row total-line"><span>TOTAL</span><strong id="t-total" style="font-size:1.4rem;">$0.00</strong></div>
+          </div>
+        </div>
+
+        <!-- Notes & Actions -->
+        <div class="glass-card inv-card" style="grid-column: 1 / -1;">
+          <h2>Notes / Payment Info</h2>
+          <div class="field">
+            <textarea id="inv-notes" style="min-height:80px;" placeholder="Payment terms, BSB/ACC details, etc..."></textarea>
+          </div>
+          <div class="btn-group" style="justify-content: flex-end;">
+            <button class="btn btn-primary" onclick="saveInvoiceData()">💾 Save Receipt</button>
+            <button class="btn btn-accent" onclick="previewInvoice()">👁️ Preview & Print</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPENSES VIEW -->
+    <section id="view-expenses" class="view">
+      <div class="header-actions view-header">
+        <div>
+          <h1 class="view-title">Expenses & Payouts</h1>
+          <p class="view-subtitle">Track your team payouts and business expenses.</p>
+        </div>
+        <button class="btn btn-danger" style="color:white; border:none; background:var(--danger-dark);" onclick="openExpenseModal()">+ Add Expense</button>
+      </div>
+
+      <div class="glass-card table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="expenses-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SETTINGS VIEW -->
+    <section id="view-settings" class="view">
+      <div class="view-header">
+        <h1 class="view-title">Settings & Data</h1>
+        <p class="view-subtitle">Manage your CRM data.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="glass-card">
+          <h3 style="margin-bottom:16px; border-bottom:1px solid var(--glass-border); padding-bottom:8px;">Data Management</h3>
+          <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;">
+            Since this CRM runs entirely in your browser using LocalStorage, it is highly recommended to frequently export your data as a backup.
+          </p>
+          <div class="btn-group" style="flex-direction:column; gap:16px;">
+            <button class="btn btn-accent" onclick="exportData()" style="width:100%; justify-content:center;">📥 Export Data (JSON)</button>
+            <div style="position:relative;">
+              <input type="file" id="import-file" accept=".json" style="position:absolute; inset:0; opacity:0; cursor:pointer;" onchange="importData(event)">
+              <button class="btn btn-secondary" style="width:100%; justify-content:center; pointer-events:none;">📤 Import Data (JSON)</button>
+            </div>
+            <button class="btn btn-danger" onclick="clearAllData()" style="width:100%; justify-content:center; margin-top:24px;">⚠️ Erase All CRM Data</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── MODALS ── -->
+  <!-- Customer Modal -->
+  <div class="modal-backdrop" id="modal-customer">
+    <div class="modal">
+      <h2 class="modal-title" id="cust-modal-title">Add Customer</h2>
+      <input type="hidden" id="cust-id">
+      <div class="field"><label>Name *</label><input type="text" id="cust-name"></div>
+      <div class="field"><label>Phone</label><input type="text" id="cust-phone"></div>
+      <div class="field"><label>Email</label><input type="text" id="cust-email"></div>
+      <div class="field"><label>Address</label><input type="text" id="cust-address"></div>
+      <div class="btn-group" style="justify-content: flex-end; margin-top:24px;">
+        <button class="btn btn-secondary" onclick="closeModal('modal-customer')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveCustomer()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Job Summary Modal -->
+  <div class="modal-backdrop" id="modal-job-summary">
+    <div class="modal">
+      <h2 class="modal-title">Upcoming Jobs Summary</h2>
+      <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;">Copy this text to send to your WhatsApp group.</p>
+      <div class="field">
+        <textarea id="job-summary-text" rows="10" readonly style="background:rgba(0,0,0,0.3); font-family:monospace;"></textarea>
+      </div>
+      <div class="btn-group" style="justify-content: flex-end; margin-top:24px;">
+        <button class="btn btn-secondary" onclick="closeModal('modal-job-summary')">Close</button>
+        <button class="btn btn-primary" onclick="copyJobSummary()">📋 Copy to Clipboard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Job Modal -->
+  <div class="modal-backdrop" id="modal-job">
+    <div class="modal">
+      <h2 class="modal-title" id="job-modal-title">Add Job</h2>
+      <input type="hidden" id="job-id">
+      <div class="field">
+        <label>Customer *</label>
+        <select id="job-customer"></select>
+      </div>
+      <div class="field"><label>Date *</label><input type="date" id="job-date"></div>
+      <div class="field"><label>Description</label><textarea id="job-desc" rows="3"></textarea></div>
+      <div class="field"><label>Estimated Price ($)</label><input type="number" id="job-price" min="0" step="0.01"></div>
+      <div class="field">
+        <label>Status</label>
+        <select id="job-status">
+          <option value="Pending">Pending</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </div>
+      <div class="btn-group" style="justify-content: flex-end; margin-top:24px;">
+        <button class="btn btn-secondary" onclick="closeModal('modal-job')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveJob()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expense Modal -->
+  <div class="modal-backdrop" id="modal-expense">
+    <div class="modal">
+      <h2 class="modal-title" id="exp-modal-title">Add Expense</h2>
+      <input type="hidden" id="exp-id">
+      <div class="field"><label>Date *</label><input type="date" id="exp-date"></div>
+      <div class="field">
+        <label>Category *</label>
+        <select id="exp-category">
+          <option value="Pay (Self)">Pay (Self)</option>
+          <option value="Pay (Team)">Pay (Team)</option>
+          <option value="Equipment">Equipment</option>
+          <option value="Transport">Transport</option>
+          <option value="Materials">Materials</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Description</label><input type="text" id="exp-desc"></div>
+      <div class="field"><label>Amount ($) *</label><input type="number" id="exp-amount" min="0" step="0.01"></div>
+      <div class="btn-group" style="justify-content: flex-end; margin-top:24px;">
+        <button class="btn btn-secondary" onclick="closeModal('modal-expense')">Cancel</button>
+        <button class="btn btn-danger" style="color:white;" onclick="saveExpense()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print Overlay -->
+  <div id="print-overlay">
+    <div style="width:100%;max-width:720px">
+      <div class="preview-actions" style="display:flex; justify-content:center; gap:12px; margin-bottom:24px;">
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Print / PDF</button>
+        <button class="btn btn-secondary" onclick="closePrint()">✕ Close</button>
+      </div>
+      <div id="receipt-paper">
+        <button class="receipt-close" onclick="closePrint()">✕</button>
+        <div id="receipt-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <!-- ── SCRIPTS ── -->
+  <script>
+    /* === STATE MANAGEMENT === */
+    const defaultState = {
+      customers: [],
+      jobs: [],
+      invoices: [],
+      expenses: [],
+      settings: {
+        bizName: 'SimplyLawn', bizTagline: 'Lawn Maintenance & Care',
+        bizPhone: '', bizEmail: '', bizAddress: '', logoDataUrl: null
+      }
+    };
+
+    let crm = JSON.parse(localStorage.getItem('nexus_crm')) || defaultState;
+    if(!crm.settings) crm.settings = defaultState.settings; // Migration fallback
+    if(!crm.expenses) crm.expenses = [];
+    
+    // Invoice local state
+    let currentInvItems = [];
+    let invPaymentStatus = 'unpaid';
+    let currentInvId = null;
+
+    function saveState() {
+      localStorage.setItem('nexus_crm', JSON.stringify(crm));
+    }
+
+    /* === INITIALIZATION === */
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
+      loadSettingsToUI();
+      renderAll();
+      clearInvoiceForm();
+    });
+
+    /* === ROUTING === */
+    function switchView(viewId, linkEl) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-' + viewId).classList.add('active');
+      
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      if(linkEl) linkEl.classList.add('active');
+
+      if(viewId === 'invoices') populateInvoiceCustomerDropdown();
+    }
+
+    /* === UI HELPERS === */
+    function showToast(msg, isError = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = isError ? 'show error' : 'show';
+      setTimeout(() => t.className = '', 3000);
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
+    function escapeHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    /* === RENDER DISPATCHER === */
+    function renderAll() {
+      renderDashboard();
+      renderCustomers();
+      renderJobs();
+      renderSavedInvoices();
+      renderExpenses();
+    }
+
+    /* === DASHBOARD === */
+    function renderDashboard() {
+      const totalRev = crm.invoices.filter(i => i.paymentStatus === 'paid').reduce((s, i) => s + (i.total||0), 0);
+      const totalExp = crm.expenses.reduce((s, e) => s + (+e.amount||0), 0);
+      
+      document.getElementById('dash-revenue').textContent = '$' + totalRev.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2});
+      document.getElementById('dash-expenses').textContent = '$' + totalExp.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2});
+      document.getElementById('dash-profit').textContent = '$' + (totalRev - totalExp).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2});
+      
+      document.getElementById('dash-cust-count').textContent = crm.customers.length;
+      document.getElementById('dash-job-count').textContent = crm.jobs.filter(j => j.status !== 'Completed').length;
+      document.getElementById('dash-inv-count').textContent = crm.invoices.length;
+
+      // Recent Jobs
+      const jobBody = document.getElementById('dash-recent-jobs');
+      jobBody.innerHTML = '';
+      const recentJobs = [...crm.jobs].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+      recentJobs.forEach(j => {
+        const c = crm.customers.find(cx => cx.id === j.customerId);
+        let badgeClass = 'badge-pending';
+        if(j.status === 'In Progress') badgeClass = 'badge-progress';
+        if(j.status === 'Completed') badgeClass = 'badge-completed';
+        jobBody.innerHTML += `<tr>
+          <td>${escapeHtml(c ? c.name : 'Unknown')}</td>
+          <td>${j.date}</td>
+          <td><span class="badge ${badgeClass}">${j.status}</span></td>
+        </tr>`;
+      });
+
+      // Recent Invoices
+      const invBody = document.getElementById('dash-recent-invoices');
+      invBody.innerHTML = '';
+      const recentInvs = [...crm.invoices].sort((a,b) => b.createdAt - a.createdAt).slice(0, 5);
+      recentInvs.forEach(i => {
+        invBody.innerHTML += `<tr>
+          <td>#${escapeHtml(i.invNumber)}</td>
+          <td>${escapeHtml(i.clientName)}</td>
+          <td style="color:var(--lime); font-weight:600;">$${(i.total||0).toFixed(2)}</td>
+        </tr>`;
+      });
+    }
+
+    /* === CUSTOMERS === */
+    function renderCustomers() {
+      const tbody = document.getElementById('customers-table-body');
+      tbody.innerHTML = '';
+      crm.customers.forEach(c => {
+        tbody.innerHTML += `<tr>
+          <td style="font-weight:600;">${escapeHtml(c.name)}</td>
+          <td>${escapeHtml(c.phone)}</td>
+          <td>${escapeHtml(c.email)}</td>
+          <td>${escapeHtml(c.address)}</td>
+          <td style="text-align:right;">
+            <button class="btn-icon" onclick="editCustomer('${c.id}')">✏️</button>
+            <button class="btn-icon" style="color:var(--danger)" onclick="deleteCustomer('${c.id}')">🗑️</button>
+          </td>
+        </tr>`;
+      });
+    }
+
+    function openCustomerModal() {
+      document.getElementById('cust-modal-title').textContent = 'Add Customer';
+      document.getElementById('cust-id').value = '';
+      document.getElementById('cust-name').value = '';
+      document.getElementById('cust-phone').value = '';
+      document.getElementById('cust-email').value = '';
+      document.getElementById('cust-address').value = '';
+      openModal('modal-customer');
+    }
+
+    function saveCustomer() {
+      const id = document.getElementById('cust-id').value;
+      const name = document.getElementById('cust-name').value.trim();
+      if(!name) return showToast('Name is required', true);
+
+      const customer = {
+        id: id || generateId(),
+        name,
+        phone: document.getElementById('cust-phone').value,
+        email: document.getElementById('cust-email').value,
+        address: document.getElementById('cust-address').value,
+      };
+
+      if(id) {
+        const idx = crm.customers.findIndex(c => c.id === id);
+        crm.customers[idx] = customer;
+        showToast('Customer updated');
+      } else {
+        crm.customers.push(customer);
+        showToast('Customer added');
+      }
+      
+      saveState();
+      renderAll();
+      closeModal('modal-customer');
+    }
+
+    function editCustomer(id) {
+      const c = crm.customers.find(x => x.id === id);
+      if(!c) return;
+      document.getElementById('cust-modal-title').textContent = 'Edit Customer';
+      document.getElementById('cust-id').value = c.id;
+      document.getElementById('cust-name').value = c.name;
+      document.getElementById('cust-phone').value = c.phone;
+      document.getElementById('cust-email').value = c.email;
+      document.getElementById('cust-address').value = c.address;
+      openModal('modal-customer');
+    }
+
+    function deleteCustomer(id) {
+      if(confirm('Delete customer? This will NOT delete their invoices or jobs automatically.')) {
+        crm.customers = crm.customers.filter(x => x.id !== id);
+        saveState();
+        renderAll();
+        showToast('Customer deleted');
+      }
+    }
+
+    /* === JOBS === */
+    function renderJobs() {
+      const tbody = document.getElementById('jobs-table-body');
+      tbody.innerHTML = '';
+      
+      // Sort jobs by date descending
+      const sortedJobs = [...crm.jobs].sort((a,b) => new Date(b.date) - new Date(a.date));
+
+      sortedJobs.forEach(j => {
+        const c = crm.customers.find(cx => cx.id === j.customerId);
+        let badgeClass = 'badge-pending';
+        if(j.status === 'In Progress') badgeClass = 'badge-progress';
+        if(j.status === 'Completed') badgeClass = 'badge-completed';
+
+        tbody.innerHTML += `<tr>
+          <td>${j.date}</td>
+          <td style="font-weight:600;">${escapeHtml(c ? c.name : 'Unknown')}</td>
+          <td>${escapeHtml(j.desc)}</td>
+          <td style="color:var(--lime);">$${(+j.price||0).toFixed(2)}</td>
+          <td><span class="badge ${badgeClass}">${j.status}</span></td>
+          <td style="text-align:right;">
+            <button class="btn-icon" onclick="editJob('${j.id}')">✏️</button>
+            <button class="btn-icon" style="color:var(--danger)" onclick="deleteJob('${j.id}')">🗑️</button>
+          </td>
+        </tr>`;
+      });
+    }
+
+    function populateJobCustomerDropdown() {
+      const sel = document.getElementById('job-customer');
+      sel.innerHTML = '<option value="">-- Select Customer --</option>';
+      crm.customers.forEach(c => {
+        sel.innerHTML += `<option value="${c.id}">${escapeHtml(c.name)}</option>`;
+      });
+    }
+
+    function openJobModal() {
+      populateJobCustomerDropdown();
+      document.getElementById('job-modal-title').textContent = 'Add Job';
+      document.getElementById('job-id').value = '';
+      document.getElementById('job-customer').value = '';
+      document.getElementById('job-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('job-desc').value = '';
+      document.getElementById('job-price').value = '';
+      document.getElementById('job-status').value = 'Pending';
+      openModal('modal-job');
+    }
+
+    function saveJob() {
+      const id = document.getElementById('job-id').value;
+      const customerId = document.getElementById('job-customer').value;
+      if(!customerId) return showToast('Please select a customer', true);
+
+      const job = {
+        id: id || generateId(),
+        customerId,
+        date: document.getElementById('job-date').value,
+        desc: document.getElementById('job-desc').value,
+        price: document.getElementById('job-price').value,
+        status: document.getElementById('job-status').value
+      };
+
+      if(id) {
+        const idx = crm.jobs.findIndex(x => x.id === id);
+        crm.jobs[idx] = job;
+        showToast('Job updated');
+      } else {
+        crm.jobs.push(job);
+        showToast('Job added');
+      }
+      
+      saveState();
+      renderAll();
+      closeModal('modal-job');
+    }
+
+    function editJob(id) {
+      const j = crm.jobs.find(x => x.id === id);
+      if(!j) return;
+      populateJobCustomerDropdown();
+      document.getElementById('job-modal-title').textContent = 'Edit Job';
+      document.getElementById('job-id').value = j.id;
+      document.getElementById('job-customer').value = j.customerId;
+      document.getElementById('job-date').value = j.date;
+      document.getElementById('job-desc').value = j.desc;
+      document.getElementById('job-price').value = j.price || '';
+      document.getElementById('job-status').value = j.status;
+      openModal('modal-job');
+    }
+
+    function deleteJob(id) {
+      if(confirm('Delete job?')) {
+        crm.jobs = crm.jobs.filter(x => x.id !== id);
+        saveState();
+        renderAll();
+        showToast('Job deleted');
+      }
+    }
+
+    /* === EXPENSES === */
+    function renderExpenses() {
+      const tbody = document.getElementById('expenses-table-body');
+      tbody.innerHTML = '';
+      const sorted = [...crm.expenses].sort((a,b) => new Date(b.date) - new Date(a.date));
+      sorted.forEach(e => {
+        tbody.innerHTML += `<tr>
+          <td>${e.date}</td>
+          <td><span class="badge" style="background:var(--glass-border);color:var(--text-main);">${escapeHtml(e.category)}</span></td>
+          <td>${escapeHtml(e.desc)}</td>
+          <td style="color:var(--danger); font-weight:600;">$${(+e.amount||0).toFixed(2)}</td>
+          <td style="text-align:right;">
+            <button class="btn-icon" onclick="editExpense('${e.id}')">✏️</button>
+            <button class="btn-icon" style="color:var(--danger)" onclick="deleteExpense('${e.id}')">🗑️</button>
+          </td>
+        </tr>`;
+      });
+    }
+    
+    function openExpenseModal() {
+      document.getElementById('exp-modal-title').textContent = 'Add Expense';
+      document.getElementById('exp-id').value = '';
+      document.getElementById('exp-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('exp-category').value = 'Pay (Self)';
+      document.getElementById('exp-desc').value = '';
+      document.getElementById('exp-amount').value = '';
+      openModal('modal-expense');
+    }
+    
+    function saveExpense() {
+      const id = document.getElementById('exp-id').value;
+      const amt = document.getElementById('exp-amount').value;
+      if(!amt) return showToast('Amount is required', true);
+      
+      const exp = {
+        id: id || generateId(),
+        date: document.getElementById('exp-date').value,
+        category: document.getElementById('exp-category').value,
+        desc: document.getElementById('exp-desc').value,
+        amount: amt
+      };
+      
+      if(id) {
+        const idx = crm.expenses.findIndex(x => x.id === id);
+        crm.expenses[idx] = exp;
+        showToast('Expense updated');
+      } else {
+        crm.expenses.push(exp);
+        showToast('Expense added');
+      }
+      
+      saveState();
+      renderAll();
+      closeModal('modal-expense');
+    }
+    
+    function editExpense(id) {
+      const e = crm.expenses.find(x => x.id === id);
+      if(!e) return;
+      document.getElementById('exp-modal-title').textContent = 'Edit Expense';
+      document.getElementById('exp-id').value = e.id;
+      document.getElementById('exp-date').value = e.date;
+      document.getElementById('exp-category').value = e.category;
+      document.getElementById('exp-desc').value = e.desc;
+      document.getElementById('exp-amount').value = e.amount;
+      openModal('modal-expense');
+    }
+    
+    function deleteExpense(id) {
+      if(confirm('Delete expense?')) {
+        crm.expenses = crm.expenses.filter(x => x.id !== id);
+        saveState();
+        renderAll();
+        showToast('Expense deleted');
+      }
+    }
+
+    function openJobSummaryModal() {
+      const summaryText = generateJobsSummaryText();
+      document.getElementById('job-summary-text').value = summaryText;
+      openModal('modal-job-summary');
+    }
+
+    function generateJobsSummaryText() {
+      // Get all pending and in-progress jobs, sorted by date
+      const activeJobs = [...crm.jobs]
+        .filter(j => j.status !== 'Completed')
+        .sort((a,b) => new Date(a.date) - new Date(b.date));
+
+      if(activeJobs.length === 0) return "No upcoming jobs currently scheduled.";
+
+      let text = "📋 *Upcoming Jobs Summary*\n\n";
+      activeJobs.forEach(j => {
+        const c = crm.customers.find(cx => cx.id === j.customerId);
+        const customerName = c ? c.name : 'Unknown Customer';
+        const address = c ? c.address : 'No address';
+        const phone = c && c.phone ? c.phone : '';
+        
+        // Format date nicely
+        const dateObj = new Date(j.date);
+        const dateStr = isNaN(dateObj) ? j.date : dateObj.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+
+        text += `📅 *${dateStr}* - ${j.status}\n`;
+        text += `👤 ${customerName}\n`;
+        if(phone) text += `📞 ${phone}\n`;
+        text += `📍 ${address}\n`;
+        if(j.desc) text += `🛠️ ${j.desc}\n`;
+        if(j.price) text += `💵 Est: $${(+j.price).toFixed(2)}\n`;
+        text += `\n`;
+      });
+
+      return text.trim();
+    }
+
+    function copyJobSummary() {
+      const textArea = document.getElementById('job-summary-text');
+      textArea.select();
+      document.execCommand('copy');
+      showToast('Copied to clipboard!');
+    }
+
+    /* === INVOICE GENERATOR INTEGRATION === */
+    function populateInvoiceCustomerDropdown() {
+      const sel = document.getElementById('inv-client-select');
+      sel.innerHTML = '<option value="">-- Custom / Walk-in --</option>';
+      crm.customers.forEach(c => {
+        sel.innerHTML += `<option value="${c.id}">${escapeHtml(c.name)}</option>`;
+      });
+    }
+
+    function autoFillInvoiceClient() {
+      const id = document.getElementById('inv-client-select').value;
+      if(!id) {
+        document.getElementById('client-name').value = '';
+        document.getElementById('client-address').value = '';
+        document.getElementById('client-phone').value = '';
+        return;
+      }
+      const c = crm.customers.find(x => x.id === id);
+      if(c) {
+        document.getElementById('client-name').value = c.name;
+        document.getElementById('client-address').value = c.address;
+        document.getElementById('client-phone').value = c.phone;
+      }
+    }
+
+    function setInvStatus(s) {
+      invPaymentStatus = s;
+      document.getElementById('status-unpaid').className = 'status-opt' + (s === 'unpaid' ? ' active-unpaid' : '');
+      document.getElementById('status-paid').className = 'status-opt' + (s === 'paid' ? ' active-paid' : '');
+    }
+
+    function autoInvNumber() {
+      const next = String(crm.invoices.length + 1).padStart(3, '0');
+      document.getElementById('inv-number').value = next;
+    }
+
+    function addInvItem(desc = '', qty = 1, price = 0) {
+      currentInvItems.push({ id: Math.random().toString(), desc, qty, price });
+      renderInvItems();
+    }
+
+    function removeInvItem(id) {
+      currentInvItems = currentInvItems.filter(i => i.id !== id);
+      renderInvItems();
+    }
+
+    function updateInvItem(id, field, val) {
+      const item = currentInvItems.find(i => i.id === id);
+      if(item) {
+        item[field] = val;
+        renderInvItems(); // simplistic re-render
+      }
+    }
+
+    function renderInvItems() {
+      const tbody = document.getElementById('items-body');
+      tbody.innerHTML = '';
+      currentInvItems.forEach(item => {
+        const sub = ((+item.qty||0) * (+item.price||0)).toFixed(2);
+        tbody.innerHTML += `<tr class="item-row">
+          <td><input type="text" value="${escapeHtml(item.desc)}" onchange="updateInvItem('${item.id}', 'desc', this.value)"></td>
+          <td><input type="number" step="0.5" min="0" value="${item.qty}" onchange="updateInvItem('${item.id}', 'qty', this.value)"></td>
+          <td><input type="number" step="0.01" min="0" value="${item.price}" onchange="updateInvItem('${item.id}', 'price', this.value)"></td>
+          <td class="subtotal-col">$${sub}</td>
+          <td><button class="btn-icon" style="color:var(--danger)" onclick="removeInvItem('${item.id}')">✕</button></td>
+        </tr>`;
+      });
+      calcInvTotals();
+    }
+
+    function calcInvTotals() {
+      const subtotal = currentInvItems.reduce((s, i) => s + (+i.qty || 0) * (+i.price || 0), 0);
+      document.getElementById('t-subtotal').textContent = '$' + subtotal.toFixed(2);
+
+      const discVal = parseFloat(document.getElementById('discount-val').value) || 0;
+      const discType = document.getElementById('discount-type').value;
+      let discAmt = discType === 'pct' ? subtotal * (discVal / 100) : discVal;
+      discAmt = Math.min(discAmt, subtotal);
+
+      const afterDisc = Math.max(0, subtotal - discAmt);
+      const taxRate = parseFloat(document.getElementById('tax-rate').value) || 0;
+      const taxAmt = afterDisc * (taxRate / 100);
+      const total = afterDisc + taxAmt;
+
+      const rDisc = document.getElementById('row-discount');
+      if (discAmt > 0) {
+        rDisc.style.display = 'flex';
+        document.getElementById('t-discount').textContent = '-$' + discAmt.toFixed(2);
+      } else rDisc.style.display = 'none';
+
+      const rTax = document.getElementById('row-tax');
+      if (taxRate > 0) {
+        rTax.style.display = 'flex';
+        document.getElementById('t-tax').textContent = '+$' + taxAmt.toFixed(2);
+      } else rTax.style.display = 'none';
+
+      document.getElementById('t-total').textContent = '$' + total.toFixed(2);
+      return { subtotal, discVal, discType, discAmt, taxRate, taxAmt, total };
+    }
+
+    function saveInvoiceData() {
+      const totals = calcInvTotals();
+      const clientName = document.getElementById('client-name').value.trim();
+      if(!clientName) return showToast('Client Name required', true);
+
+      const invData = {
+        id: currentInvId || generateId(),
+        createdAt: currentInvId ? (crm.invoices.find(i=>i.id===currentInvId)?.createdAt || Date.now()) : Date.now(),
+        invNumber: document.getElementById('inv-number').value,
+        invDate: document.getElementById('inv-date').value,
+        clientName,
+        clientAddress: document.getElementById('client-address').value,
+        clientPhone: document.getElementById('client-phone').value,
+        notes: document.getElementById('inv-notes').value,
+        paymentStatus: invPaymentStatus,
+        items: JSON.parse(JSON.stringify(currentInvItems)),
+        ...totals
+      };
+
+      const existingIdx = crm.invoices.findIndex(i => i.id === invData.id);
+      if(existingIdx >= 0) crm.invoices[existingIdx] = invData;
+      else crm.invoices.push(invData);
+
+      saveState();
+      renderAll();
+      showToast('Receipt Saved!');
+      currentInvId = invData.id;
+    }
+
+    function clearInvoiceForm() {
+      currentInvId = null;
+      document.getElementById('inv-client-select').value = '';
+      document.getElementById('client-name').value = '';
+      document.getElementById('client-address').value = '';
+      document.getElementById('client-phone').value = '';
+      document.getElementById('inv-notes').value = '';
+      document.getElementById('discount-val').value = '';
+      document.getElementById('tax-rate').value = '';
+      
+      setInvStatus('unpaid');
+      autoInvNumber();
+      document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
+      
+      currentInvItems = [];
+      addInvItem('Basic Maintenance Package', 1, 150);
+    }
+
+    function renderSavedInvoices() {
+      const container = document.getElementById('saved-invoices-list');
+      container.innerHTML = '';
+      const sorted = [...crm.invoices].sort((a,b) => b.createdAt - a.createdAt);
+      if(sorted.length === 0) {
+        container.innerHTML = '<div style="color:var(--text-muted); font-size:0.9rem;">No saved receipts yet.</div>';
+        return;
+      }
+      
+      sorted.forEach(inv => {
+        let badge = inv.paymentStatus === 'paid' 
+          ? '<span class="badge badge-paid" style="font-size:0.6rem">Paid</span>' 
+          : '<span class="badge badge-pending" style="font-size:0.6rem">Unpaid</span>';
+          
+        container.innerHTML += `
+          <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:8px; border:1px solid var(--glass-border); cursor:pointer;" onclick="loadInvoice('${inv.id}')">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <strong style="color:var(--text-main)">#${escapeHtml(inv.invNumber)} - ${escapeHtml(inv.clientName)}</strong>
+              <span style="color:var(--lime); font-weight:700;">$${inv.total.toFixed(2)}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:0.8rem; color:var(--text-muted)">${inv.invDate}</span>
+              ${badge}
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function loadInvoice(id) {
+      const inv = crm.invoices.find(i => i.id === id);
+      if(!inv) return;
+      
+      currentInvId = inv.id;
+      document.getElementById('inv-client-select').value = ''; // Reset dropdown
+      document.getElementById('client-name').value = inv.clientName || '';
+      document.getElementById('client-address').value = inv.clientAddress || '';
+      document.getElementById('client-phone').value = inv.clientPhone || '';
+      
+      document.getElementById('inv-number').value = inv.invNumber || '';
+      document.getElementById('inv-date').value = inv.invDate || '';
+      document.getElementById('inv-notes').value = inv.notes || '';
+      
+      document.getElementById('discount-val').value = inv.discVal || '';
+      document.getElementById('discount-type').value = inv.discType || 'flat';
+      document.getElementById('tax-rate').value = inv.taxRate || '';
+      
+      setInvStatus(inv.paymentStatus || 'unpaid');
+      currentInvItems = JSON.parse(JSON.stringify(inv.items || []));
+      renderInvItems();
+      showToast('Loaded receipt');
+    }
+
+    function previewInvoice() {
+      const totals = calcInvTotals();
+      const s = crm.settings;
+      
+      const logoHtml = s.logoDataUrl ? `<img src="${s.logoDataUrl}" style="max-height:80px; max-width:200px; object-fit:contain; margin-bottom:16px;">` : '';
+      const bizContact = [s.bizPhone, s.bizEmail, s.bizAddress].filter(Boolean).join(' &middot; ');
+
+      const itemsHtml = currentInvItems.map(item => {
+        return `<tr>
+          <td style="padding:12px 8px; border-bottom:1px solid #e5e7eb;">${escapeHtml(item.desc)}</td>
+          <td style="padding:12px 8px; border-bottom:1px solid #e5e7eb; text-align:center;">${item.qty}</td>
+          <td style="padding:12px 8px; border-bottom:1px solid #e5e7eb; text-align:right;">$${(+item.price).toFixed(2)}</td>
+          <td style="padding:12px 8px; border-bottom:1px solid #e5e7eb; text-align:right; font-weight:600;">$${((+item.qty)*(+item.price)).toFixed(2)}</td>
+        </tr>`;
+      }).join('');
+
+      let discHtml = totals.discAmt > 0 ? `<div style="display:flex;justify-content:space-between;padding:4px 0;color:#b45309"><span>Discount</span><span>-$${totals.discAmt.toFixed(2)}</span></div>` : '';
+      let taxHtml = totals.taxRate > 0 ? `<div style="display:flex;justify-content:space-between;padding:4px 0;color:#4b5563"><span>Tax</span><span>+$${totals.taxAmt.toFixed(2)}</span></div>` : '';
+      let notesHtml = document.getElementById('inv-notes').value.trim() ? `
+        <div style="margin-top:40px; padding-top:20px; border-top:2px solid #e5e7eb;">
+          <h4 style="color:#6b7280; font-size:0.8rem; text-transform:uppercase; margin-bottom:8px;">Notes</h4>
+          <p style="color:#374151; font-size:0.9rem; white-space:pre-wrap;">${escapeHtml(document.getElementById('inv-notes').value)}</p>
+        </div>` : '';
+
+      const html = `
+        <div style="font-family:'Inter',sans-serif; color:#111827;">
+          <div style="display:flex; justify-content:space-between; border-bottom:4px solid #84cc16; padding-bottom:32px; margin-bottom:32px;">
+            <div>
+              ${logoHtml}
+              <h1 style="font-size:2rem; font-weight:900; margin:0; color:#166534;">${escapeHtml(s.bizName || 'Business Name')}</h1>
+              <div style="color:#4b5563; font-weight:500; margin-top:4px;">${escapeHtml(s.bizTagline)}</div>
+              <div style="color:#6b7280; font-size:0.85rem; margin-top:12px;">${bizContact}</div>
+            </div>
+            <div style="text-align:right;">
+              <h2 style="margin:0; font-size:2rem; color:#65a30d;">INVOICE</h2>
+              <div style="font-size:1.2rem; font-weight:700; color:#374151; margin-top:8px;">#${escapeHtml(document.getElementById('inv-number').value)}</div>
+              <div style="color:#6b7280; margin-top:4px;">Date: ${document.getElementById('inv-date').value}</div>
+              <div style="margin-top:12px;">
+                ${invPaymentStatus === 'paid' ? '<span style="background:#dcfce7; color:#166534; padding:6px 16px; border-radius:99px; font-weight:700; font-size:0.8rem;">PAID</span>' : '<span style="background:#fef9c3; color:#854d0e; padding:6px 16px; border-radius:99px; font-weight:700; font-size:0.8rem;">PAYMENT DUE</span>'}
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#f9fafb; padding:20px; border-radius:12px; margin-bottom:32px;">
+            <div style="font-size:0.75rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:8px;">Bill To:</div>
+            <div style="font-size:1.2rem; font-weight:700; color:#111827;">${escapeHtml(document.getElementById('client-name').value || 'Client')}</div>
+            <div style="color:#4b5563; margin-top:4px;">${escapeHtml(document.getElementById('client-address').value)}</div>
+            <div style="color:#4b5563; margin-top:2px;">${escapeHtml(document.getElementById('client-phone').value)}</div>
+          </div>
+
+          <table style="width:100%; border-collapse:collapse; margin-bottom:32px;">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:8px; border-bottom:2px solid #84cc16; color:#6b7280; font-size:0.8rem; text-transform:uppercase;">Description</th>
+                <th style="text-align:center; padding:8px; border-bottom:2px solid #84cc16; color:#6b7280; font-size:0.8rem; text-transform:uppercase;">Qty</th>
+                <th style="text-align:right; padding:8px; border-bottom:2px solid #84cc16; color:#6b7280; font-size:0.8rem; text-transform:uppercase;">Price</th>
+                <th style="text-align:right; padding:8px; border-bottom:2px solid #84cc16; color:#6b7280; font-size:0.8rem; text-transform:uppercase;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>${itemsHtml}</tbody>
+          </table>
+
+          <div style="display:flex; justify-content:flex-end;">
+            <div style="width:300px;">
+              <div style="display:flex;justify-content:space-between;padding:4px 0;color:#4b5563"><span>Subtotal</span><span>$${totals.subtotal.toFixed(2)}</span></div>
+              ${discHtml}
+              ${taxHtml}
+              <div style="display:flex;justify-content:space-between;padding:12px 0 0;margin-top:8px;border-top:2px solid #84cc16;font-size:1.4rem;font-weight:800;color:#166534;">
+                <span>Total</span><span>$${totals.total.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+          ${notesHtml}
+          <div style="text-align:center; margin-top:60px; color:#9ca3af; font-size:0.85rem;">
+            Thank you for choosing <strong style="color:#65a30d">${escapeHtml(s.bizName)}</strong>!
+          </div>
+        </div>
+      `;
+
+      document.getElementById('receipt-content').innerHTML = html;
+      document.getElementById('print-overlay').classList.add('active');
+    }
+
+    function closePrint() {
+      document.getElementById('print-overlay').classList.remove('active');
+    }
+
+    /* === SETTINGS & DATA === */
+    function loadSettingsToUI() {
+      const s = crm.settings;
+      document.getElementById('biz-name').value = s.bizName || '';
+      document.getElementById('biz-tagline').value = s.bizTagline || '';
+      document.getElementById('biz-phone').value = s.bizPhone || '';
+      document.getElementById('biz-email').value = s.bizEmail || '';
+      document.getElementById('biz-address').value = s.bizAddress || '';
+      
+      if(s.logoDataUrl) {
+        document.getElementById('logo-preview').src = s.logoDataUrl;
+        document.getElementById('logo-preview').style.display = 'block';
+        document.getElementById('logo-text').style.display = 'none';
+      }
+    }
+
+    // Logo Upload handler
+    document.getElementById('logo-file').addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        crm.settings.logoDataUrl = e.target.result;
+        loadSettingsToUI();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function saveSettings() {
+      crm.settings.bizName = document.getElementById('biz-name').value;
+      crm.settings.bizTagline = document.getElementById('biz-tagline').value;
+      crm.settings.bizPhone = document.getElementById('biz-phone').value;
+      crm.settings.bizEmail = document.getElementById('biz-email').value;
+      crm.settings.bizAddress = document.getElementById('biz-address').value;
+      saveState();
+    }
+
+    function exportData() {
+      const dataStr = JSON.stringify(crm, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `nexus_crm_backup_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(e) {
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const imported = JSON.parse(ev.target.result);
+          if(!imported.customers || !imported.jobs || !imported.settings) throw new Error('Invalid format');
+          crm = imported;
+          saveState();
+          loadSettingsToUI();
+          renderAll();
+          showToast('Data imported successfully!');
+        } catch(err) {
+          showToast('Error importing data: Invalid JSON', true);
+        }
+        e.target.value = ''; // Reset input
+      };
+      reader.readAsText(file);
+    }
+
+    function clearAllData() {
+      if(confirm('WARNING: This will permanently delete ALL customers, jobs, invoices, and settings from your browser. Are you sure?')) {
+        if(confirm('Are you absolutely sure? This cannot be undone.')) {
+          crm = JSON.parse(JSON.stringify(defaultState));
+          saveState();
+          loadSettingsToUI();
+          renderAll();
+          clearInvoiceForm();
+          showToast('All data erased');
+        }
+      }
+    }
+  </script>
+</body>
+</html>
